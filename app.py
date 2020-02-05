@@ -57,28 +57,22 @@ def tobs():
 # 5. Define what to do when a user hits the <start> route
 # Return a JSON list of the minimum temperature, the average temperature, and the max temperature for a given start or start-end range.
 # When given the start only, calculate TMIN, TAVG, and TMAX for all dates greater than and equal to the start date.
-# When given the start and the end date, calculate the TMIN, TAVG, and TMAX for dates between the start and end date inclusive.
 @app.route("/api/v1.0/<start>")
 def start():
     # create function variable for min, max and avg temps
     tobs = [func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)]
     # Query the min, max & avg tobs for given start date
-    start_tob = session.query(*sel).filter(Measurement.date >= start).all()
+    start_tob = session.query(*tobs).filter(Measurement.date >= start).all()
     start_tob = list(np.ravel(start_tob))
     return jsonify (start_tob)
 
-lowest_temp = session.query(func.min(Measurement.tobs).label('min')).filter(Measurement.station =='USC00519281').order_by(Measurement.tobs.asc()).scalar()
-highest_temp = session.query(func.max(Measurement.tobs).label('max')).filter(Measurement.station =='USC00519281').order_by(Measurement.tobs.asc()).scalar()
-avg_temp = session.query(func.avg(Measurement.tobs).label('average')).filter(Measurement.station =='USC00519281').scalar()
-
 # 6. Define what to do when a user hits the start_end route
 # Return a JSON list of the minimum temperature, the average temperature, and the max temperature for a given start or start-end range.
-# When given the start only, calculate TMIN, TAVG, and TMAX for all dates greater than and equal to the start date.
 # When given the start and the end date, calculate the TMIN, TAVG, and TMAX for dates between the start and end date inclusive.
 @app.route("/api/v1.0/<start>/<end>")
 def start_end():
     # Query the min, max & avg tobs for given start & end dates
-    result = session.query(*sel).filter(Measurement.date >= start).filter(Measurement.date <= end).all()
+    result = session.query(*tobs).filter(Measurement.date >= start).filter(Measurement.date <= end).all()
     start_end_tobs = list(np.ravel(result))
     return jsonify (start_end_tobs)
 
