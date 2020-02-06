@@ -1,5 +1,33 @@
+# Python SQL toolkit and Object Relational Mapper
+import sqlalchemy
+from sqlalchemy import desc
+from sqlalchemy import distinct
+from sqlalchemy import func
+from sqlalchemy.ext.automap import automap_base
+from sqlalchemy.orm import Session
+from sqlalchemy import create_engine, func
+import pandas as pd
+
+import numpy as np
+import pandas as pd
+import datetime as dt
+
+engine = create_engine("sqlite:///Resources/hawaii.sqlite")
+
+# reflect an existing database into a new model
+Base = automap_base()
+# reflect the tables
+Base.prepare(engine, reflect=True)
+
+# Save references to each table
+Measurement = Base.classes.measurement
+Station = Base.classes.station
+
+# Create our session (link) from Python to the DB
+session = Session(engine)
+
 # Import Flask
-from flask import Flask
+from flask import Flask, jsonify
 
 # Create an app, being sure to pass __name__
 app = Flask(__name__)
@@ -8,11 +36,13 @@ app = Flask(__name__)
 @app.route("/")
 def home():
     return (
+        f"Welcome to the Hawaii Climate Analysis API!<br/>"
         f" Available Routes:<br/>"
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/temp/start/end"
+        f"/api/v1.0/<start><br/>"
+        f"/api/v1.0/<start>/<end><br/>"
     )
 
 # 2. Define what to do when a user hits the precipitation route
@@ -22,25 +52,19 @@ def home():
 def precipitation():
     # Calculate lastest record date in the database
     session.query(Measurement.date).order_by(Measurement.date.desc()).first()
-    
     # Select the date and prcp "columns", filter the last twelve months of data and order by date
-    last_twelve_mo = engine.execute("SELECT date, prcp FROM measurement WHERE date BETWEEN '2016-08-23' AND '2017-08-23' AND prcp NOT NULL ORDER BY date ASC")
-
-    # Save the query results as a Pandas DataFrame
-    twelve_mo_df = pd.DataFrame(last_twelve_mo.fetchall())
-
-    # Rename DateFrame columns
-    twelve_mo_df = twelve_mo_df.rename(columns = {0:'date', 1:'prcp'})
-    # twelve_mo_df
-
-    return jsonify (twelve_mo_df)
+    twelve_mo_prcp = engine.execute("SELECT date, prcp FROM measurement WHERE date BETWEEN '2016-08-23' AND '2017-08-23' AND prcp NOT NULL ORDER BY date ASC")
+    # Save the query results as a DataFrame
+    twelve_mo_prcp_df = pd.DataFrame(twelve_mo_prcp, columns= ['date','prcp'])
+    # twelve_mo_prcp_df
+    return jsonify (twelve_mo_prcp_df)
 
 # 3. Define what to do when a user hits the stations route
 # Return a JSON list of stations from the dataset.
 @app.route("/api/v1.0/stations")
 def stations():
     stations = stations.query(Station.station).all()
-    stations = list(np.ravel(results))
+    stations = list(np.ravel(stations))
     return jsonify (stations)
 
 # 4. Define what to do when a user hits the tobs route
@@ -48,17 +72,16 @@ def stations():
 # Return a JSON list of Temperature Observations (tobs) for the previous year.
 @app.route("/api/v1.0/tobs")
 def tobs():
-    station_tobs = session.query(Measurement.tobs).\
-        filter(Measurement.station =='USC00519281').\
-            filter(Measurement.date.between('2016-08-23', '2017-08-23')).all()
-    stations_tobs = list(np.ravel(station_tobs))
-    return jsonify (stations_tobs)
+    twelve_mo_tobs = engine.execute("SELECT date, tobs FROM measurement WHERE date BETWEEN '2016-08-23' AND '2017-08-23' ORDER BY date ASC")
+    twelve_mo_tobs_df = pd.DataFrame(twelve_mo, columns= ['date','tobs'])
+    return jsonify (twelve_mo_tobs_df)
 
 # 5. Define what to do when a user hits the <start> route
 # Return a JSON list of the minimum temperature, the average temperature, and the max temperature for a given start or start-end range.
 # When given the start only, calculate TMIN, TAVG, and TMAX for all dates greater than and equal to the start date.
 @app.route("/api/v1.0/<start>")
 def start():
+    #  create a Start variable for URL
     # create function variable for min, max and avg temps
     tobs = [func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)]
     # Query the min, max & avg tobs for given start date
@@ -71,10 +94,11 @@ def start():
 # When given the start and the end date, calculate the TMIN, TAVG, and TMAX for dates between the start and end date inclusive.
 @app.route("/api/v1.0/<start>/<end>")
 def start_end():
-    # Query the min, max & avg tobs for given start & end dates
+#  create Start and End variables for URL
+   # Query the min, max & avg tobs for given start & end dates
     result = session.query(*tobs).filter(Measurement.date >= start).filter(Measurement.date <= end).all()
     start_end_tobs = list(np.ravel(result))
     return jsonify (start_end_tobs)
 
-if __name__ == '__main__':
-    app.run()
+if __name__ == "__main__":
+    app.run(debug=True)
