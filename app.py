@@ -57,13 +57,14 @@ def precipitation():
     # Save the query results as a DataFrame
     twelve_mo_prcp_df = pd.DataFrame(twelve_mo_prcp, columns= ['date','prcp'])
     # twelve_mo_prcp_df
-    return jsonify (twelve_mo_prcp_df)
+    return twelve_mo_prcp_df.to_json(orient='records')
+    # return jsonify (twelve_mo_prcp_df)
 
 # 3. Define what to do when a user hits the stations route
 # Return a JSON list of stations from the dataset.
 @app.route("/api/v1.0/stations")
 def stations():
-    stations = stations.query(Station.station).all()
+    stations = session.query(Station.station).all()
     stations = list(np.ravel(stations))
     return jsonify (stations)
 
@@ -73,15 +74,16 @@ def stations():
 @app.route("/api/v1.0/tobs")
 def tobs():
     twelve_mo_tobs = engine.execute("SELECT date, tobs FROM measurement WHERE date BETWEEN '2016-08-23' AND '2017-08-23' ORDER BY date ASC")
-    twelve_mo_tobs_df = pd.DataFrame(twelve_mo, columns= ['date','tobs'])
-    return jsonify (twelve_mo_tobs_df)
+    twelve_mo_tobs_df = pd.DataFrame(twelve_mo_tobs, columns= ['date','tobs'])
+    return twelve_mo_tobs_df.to_json(orient='records')
+    # return jsonify (twelve_mo_tobs_df)
 
 # 5. Define what to do when a user hits the <start> route
 # Return a JSON list of the minimum temperature, the average temperature, and the max temperature for a given start or start-end range.
 # When given the start only, calculate TMIN, TAVG, and TMAX for all dates greater than and equal to the start date.
 @app.route("/api/v1.0/<start>")
-def start():
-    #  create a Start variable for URL
+def start(start):
+    # input
     # create function variable for min, max and avg temps
     tobs = [func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)]
     # Query the min, max & avg tobs for given start date
@@ -93,7 +95,7 @@ def start():
 # Return a JSON list of the minimum temperature, the average temperature, and the max temperature for a given start or start-end range.
 # When given the start and the end date, calculate the TMIN, TAVG, and TMAX for dates between the start and end date inclusive.
 @app.route("/api/v1.0/<start>/<end>")
-def start_end():
+def start_end(start, end):
 #  create Start and End variables for URL
    # Query the min, max & avg tobs for given start & end dates
     result = session.query(*tobs).filter(Measurement.date >= start).filter(Measurement.date <= end).all()
