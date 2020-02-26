@@ -98,8 +98,8 @@ def start_end(start, end):
 #    # Query the min, max & avg tobs for given start & end dates
     tobs = [func.min(Measurement.tobs), func.max(Measurement.tobs),func.avg(Measurement.tobs)]
     start_end_tobs = session.query(*tobs).filter(Measurement.date >= start).filter(Measurement.date <= end).all()
-    
-    start_end_tobs = list(np.ravel(result))
+    start_end_tobs = list(np.ravel(start_end_tobs))
+    # start_end_tobs = list(np.ravel(result))
     return jsonify (start_end_tobs)
 #     lowest_temp = session.query(func.min(Measurement.tobs)).filter(Measurement.date >= start).filter(Measurement.date <= end).all()
 #     lowest_temp = list(np.ravel(lowest_temp))
