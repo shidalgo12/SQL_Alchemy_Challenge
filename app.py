@@ -83,9 +83,8 @@ def tobs():
 # When given the start only, calculate TMIN, TAVG, and TMAX for all dates greater than and equal to the start date.
 @app.route("/api/v1.0/<start>")
 def start(start):
-    # input
     # create function variable for min, max and avg temps
-    tobs = [func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)]
+    tobs = [func.min(Measurement.tobs), func.max(Measurement.tobs),func.avg(Measurement.tobs)]
     # Query the min, max & avg tobs for given start date
     start_tob = session.query(*tobs).filter(Measurement.date >= start).all()
     start_tob = list(np.ravel(start_tob))
@@ -96,11 +95,22 @@ def start(start):
 # When given the start and the end date, calculate the TMIN, TAVG, and TMAX for dates between the start and end date inclusive.
 @app.route("/api/v1.0/<start>/<end>")
 def start_end(start, end):
-#  create Start and End variables for URL
-   # Query the min, max & avg tobs for given start & end dates
-    result = session.query(*tobs).filter(Measurement.date >= start).filter(Measurement.date <= end).all()
+#    # Query the min, max & avg tobs for given start & end dates
+    tobs = [func.min(Measurement.tobs), func.max(Measurement.tobs),func.avg(Measurement.tobs)]
+    start_end_tobs = session.query(*tobs).filter(Measurement.date >= start).filter(Measurement.date <= end).all()
+    
     start_end_tobs = list(np.ravel(result))
     return jsonify (start_end_tobs)
+#     lowest_temp = session.query(func.min(Measurement.tobs)).filter(Measurement.date >= start).filter(Measurement.date <= end).all()
+#     lowest_temp = list(np.ravel(lowest_temp))
+#     return jsonify (lowest_temp)
+
+# highest_temp = session.query(func.max(Measurement.tobs)).\
+#  filter(Measurement.station =='USC00519281').\
+#  order_by(Measurement.tobs.asc()).scalar()
+# avg_temp = session.query(func.avg(Measurement.tobs)).filter(Measurement.station =='USC00519281').scalar()
+
+# print(f"[({lowest_temp}, {highest_temp}, {avg_temp})]")
 
 if __name__ == "__main__":
     app.run(debug=True)
