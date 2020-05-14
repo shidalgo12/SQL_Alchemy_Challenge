@@ -20,4 +20,4 @@ The following languages used to organize and visualize data: SQLAlchemy ORM quer
 2. Designed a query to retrieve the last 12 months of temperature observation data (tobs).
 3. Results plotted  as a histogram.
 
-![](tobs_histogram)
+![](tobs_histogram.png)
