@@ -1,10 +1,13 @@
 # SQL_Alchemy
 
-Queried climate data of Honolulu, Hawaii to observe 12-months of precipitation and station activity throughout the island.
+"SQLAlchemy is the Python SQL toolkit and Object Relational Mapper that gives application developers the full power and flexibility of SQL."
+https://www.sqlalchemy.org/
 
 ## Climate Analysis and Exploration
 
-Python and SQLAlchemy used for a climate analysis and data exploration in a Jupyter Lab notebook and .sqlite file.
+Python and SQLAlchemy used for a climate analysis of precipitation and station activity in Honolulu, Hawaii within a 12-month timeframe.
+
+Queries designed in a Jupyter Lab notebook sourced in a .sqlite file.
 
 The following languages used to organize and visualize data: SQLAlchemy ORM queries, Pandas, and Matplotlib.
 
